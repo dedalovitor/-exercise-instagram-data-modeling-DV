@@ -1,6 +1,6 @@
 import os
 import sys
-from sqlalchemy import Column, ForeignKey, Integer, String
+from sqlalchemy import Column, ForeignKey, Integer, String, Boolean
 from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy.orm import relationship
 from sqlalchemy import create_engine
@@ -8,28 +8,46 @@ from eralchemy2 import render_er
 
 Base = declarative_base()
 
-class Person(Base):
-    __tablename__ = 'person'
-    # Here we define columns for the table person
-    # Notice that each column is also a normal Python instance attribute.
+class User(Base):
+    __tablename__ = 'user'
     id = Column(Integer, primary_key=True)
-    name = Column(String(250), nullable=False)
+    username = Column(String(250), nullable=False)
+    first_name = Column(String(250), nullable=False)
+    last_name = Column(String(250), nullable=False)
+    email = Column(String(250), nullable=False, unique=True)
+    active = Column(Boolean, default=True)
 
-class Address(Base):
-    __tablename__ = 'address'
-    # Here we define columns for the table address.
-    # Notice that each column is also a normal Python instance attribute.
+class Post(Base):
+    __tablename__ = 'post'
     id = Column(Integer, primary_key=True)
-    street_name = Column(String(250))
-    street_number = Column(String(250))
-    post_code = Column(String(250), nullable=False)
-    person_id = Column(Integer, ForeignKey('person.id'))
-    person = relationship(Person)
+    content= Column(String(250))
+    user_id = Column(Integer, ForeignKey('user.id')) #representa el ForeignKey, diciéndole de dónde va a agarrar los datos, de la tabla user columna id
+    user = relationship(User) # representa la relación entre tablas
 
-    def to_dict(self):
-        return {}
+class Comment(Base):
+    __tablename__ = 'comment'
+    id = Column(Integer, primary_key=True)
+    content= Column(String(250), nullable=False)
+    user_id = Column(Integer, ForeignKey('user.id')) #representa el ForeignKey, diciéndole de dónde va a agarrar los datos, de la tabla user columna id
+    user = relationship(User) # representa la relación entre tablas
+    post_id = Column(Integer, ForeignKey('post.id')) #representa el ForeignKey, diciéndole de dónde va a agarrar los datos, de la tabla user columna id
+    post = relationship(Post) # representa y relación entre tablas
 
-## Draw from SQLAlchemy base
+class Media(Base):
+    __tablename__ = 'media'
+    id = Column(Integer, primary_key=True)
+    url = Column(String(250), nullable=False)
+    post_id = Column(Integer, ForeignKey('post.id')) #representa el ForeignKey, diciéndole de dónde va a agarrar los datos, de la tabla user columna id
+    post = relationship(Post) # representa y relación entre tablas
+
+class Follower (Base):
+    __tablename__ = 'follower'
+    id = Column(Integer, primary_key=True) # el id siempre es necesario
+    user_from_id= Column(Integer, ForeignKey('user.id'))  #quien da el follow
+    user_to_id= Column(Integer, ForeignKey('user.id'))  #a quien le llega el follow
+    user = relationship(User) # representa y relación entre tablas
+    
+
 try:
     result = render_er(Base, 'diagram.png')
     print("Success! Check the diagram.png file")
